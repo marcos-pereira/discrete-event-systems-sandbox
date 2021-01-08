@@ -32,3 +32,22 @@ class DeterministicFiniteAutomaton:
         print("Event alphabet")
         for event in self.alphabet_:
             print(event)
+            
+    def run(self, event_sequence):
+        print("Running automaton for the event sequence " + event_sequence)
+
+        current_state = self.initial_state_
+        print("Initial state " + current_state)
+
+        for event in event_sequence:
+            current_state = self.transitions_[current_state][event]
+            print("State " + current_state)
+
+        if current_state in self.marked_states_:
+            print("Reached marked state")
+        else:
+            print("Event sequence not accepted")
+
+
+
+
