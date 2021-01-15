@@ -22,7 +22,7 @@ class DeterministicFiniteAutomaton:
 
             for event in self.alphabet_:
                 ## Check if the transition exists
-                if transition[1]:
+                if transition[1] and event in transition[1]:
                     ## Print event and next state for that event
                     print(event, "->", transition[1][event])
                 else:
@@ -66,7 +66,6 @@ class DeterministicFiniteAutomaton:
         ## Create automaton states
         for state in self.states_:
 
-
             ## Check if it is initial state
             if state == self.initial_state_:
                 state_label = 'INIT:'+ state
@@ -85,13 +84,60 @@ class DeterministicFiniteAutomaton:
         for transition in self.transitions_.items():
             for event in self.alphabet_:
                 ## Check if transition exists
-                if transition[1]:
+                if transition[1] and event in transition[1]:
                     node1 = transition[0]
                     node2 = transition[1][event]
                     automaton.edge(node1,node2, label=event)
 
         ## Create automaton pdf and open it
         automaton.render(filename, view=True)
+
+    def reachable_automaton(self):
+
+        ## Initially, only the initial state is reachable
+        reachable_states = {self.initial_state_}
+        print(reachable_states)
+
+        ## The initial state is added
+        element_added = True
+
+        ## While an elment is added to the set
+        while element_added:
+            [reachable_states, element_added] = self.reachable_states(reachable_states)
+
+        print(reachable_states)
+
+
+    def reachable_states(self, states):
+
+        reachable_states = states.copy()
+        init_reachable_states = states.copy()
+
+        for state in states:
+            ## Get transitions of the state
+            transition = self.transitions_[state]
+            # print(transition)
+
+            ## Check all transitions of the state
+            for event in transition:
+                # print(event)
+                # print(transition[event])
+
+                ## Check if the transition leads to a new state
+                if transition[event] != state:
+                    # print("State " + transition[event] + " reachable")
+                    reachable_states.add(transition[event])
+
+        ## If the size of the set changes, at least an element has been added
+        if len(reachable_states) != len(init_reachable_states):
+            element_added = True
+        else:
+            element_added = False
+
+        return reachable_states, element_added
+
+
+
 
 
 
