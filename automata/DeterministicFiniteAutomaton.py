@@ -12,7 +12,7 @@ class DeterministicFiniteAutomaton:
 
     def print_automaton(self):
         print("States")
-        for state in self.states_:
+        for state in sorted(self.states_):
             print(state)
 
         print("Transitions")
@@ -55,7 +55,7 @@ class DeterministicFiniteAutomaton:
         else:
             print("Event sequence not accepted")
 
-    def plot_automaton(self, filename):
+    def plot_automaton(self, filename, show_output):
 
         ## Create graph
         automaton = Digraph(comment=filename)
@@ -82,15 +82,18 @@ class DeterministicFiniteAutomaton:
 
         ## Create transitions
         for transition in self.transitions_.items():
-            for event in self.alphabet_:
-                ## Check if transition exists
-                if transition[1] and event in transition[1]:
-                    node1 = transition[0]
-                    node2 = transition[1][event]
-                    automaton.edge(node1,node2, label=event)
+            ## Check if state is still a state of the automaton
+            ## A state may have been removed due to some automata operation
+            if transition[0] in self.states_:
+                for event in self.alphabet_:
+                    ## Check if transition exists
+                    if transition[1] and event in transition[1]:
+                        node1 = transition[0]
+                        node2 = transition[1][event]
+                        automaton.edge(node1,node2, label=event)
 
         ## Create automaton pdf and open it
-        automaton.render(filename, view=True)
+        automaton.render(filename, view=show_output)
 
     def reachable_automaton(self):
 
@@ -107,6 +110,18 @@ class DeterministicFiniteAutomaton:
 
         print(reachable_states)
 
+        ## Update automaton states
+        self.states_ = reachable_states.copy()
+
+        reachable_transitions = self.transitions_.copy()
+
+        ## Remove unecessary transitions
+        for transition in self.transitions_.items():
+            if transition[0] not in self.states_:
+                del reachable_transitions[transition[0]]
+
+        self.transitions_ = reachable_transitions.copy()
+
 
     def reachable_states(self, states):
 
@@ -116,16 +131,11 @@ class DeterministicFiniteAutomaton:
         for state in states:
             ## Get transitions of the state
             transition = self.transitions_[state]
-            # print(transition)
 
             ## Check all transitions of the state
             for event in transition:
-                # print(event)
-                # print(transition[event])
-
                 ## Check if the transition leads to a new state
                 if transition[event] != state:
-                    # print("State " + transition[event] + " reachable")
                     reachable_states.add(transition[event])
 
         ## If the size of the set changes, at least an element has been added
