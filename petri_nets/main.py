@@ -52,6 +52,8 @@ def main():
     net3_u1 = np.array([1, 0, 0, 0, 0])
     print(net3.next_marking(net3_u1))
 
+    
+
 if __name__ == '__main__':
 
     main()
