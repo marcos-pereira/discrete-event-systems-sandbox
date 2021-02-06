@@ -11,7 +11,8 @@ def main():
     net1_incidence_matrix = np.array([[1,0,0],
                                       [-1,1,-1],
                                       [0,-1,1]])
-    net1 = PetriNet(net1_places,net1_init_marking,net1_incidence_matrix)
+    net1 = PetriNet(net1_places,net1_init_marking)
+    net1.set_incidence_matrix(net1_incidence_matrix)
     net1_u1 = np.array([1,0,0])
     print(net1.next_marking(net1_u1))
 
@@ -23,7 +24,8 @@ def main():
                                       [0, -1, 1, 0, 1, -1, 0],
                                       [0, 0, -1, 1, 0, 1, -1],
                                       [0, 0, 0, -1, 0, 0, 1]])
-    net2 = PetriNet(net2_places, net2_init_marking, net2_incidence_matrix)
+    net2 = PetriNet(net2_places, net2_init_marking)
+    net2.set_incidence_matrix(net2_incidence_matrix)
     net2_u1 = np.array([1, 0, 0, 0, 0])
     print(net2.next_marking(net2_u1))
 
@@ -40,7 +42,7 @@ def main():
                            [0, 0, 1, 0, 1, 0, 0],
                            [0, 0, 0, 1, 0, 1, 0],
                            [0, 0, 0, 0, 0, 0, 1]])
-    net3 = PetriNet.split_incidence_matrix(net3_places, net3_init_marking, net3_Aminus, net3_Aplus)
+    net3 = PetriNet(net3_places, net3_init_marking, net3_Aminus, net3_Aplus)
     net3_u1 = np.array([1, 0, 0, 0, 0])
     print(net3.next_marking(net3_u1))
 
