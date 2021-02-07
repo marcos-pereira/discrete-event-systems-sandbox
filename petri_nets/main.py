@@ -6,7 +6,7 @@ from PetriNet import PetriNet
 def main():
 
     ## Show output of plotting net
-    show_output = True
+    show_output = False
 
     ## Client queue and server net
     net1_places = ['P1','P2','P3']
@@ -57,9 +57,8 @@ def main():
     net3.print()
     net3.plot('net3', show_output)
     net3_u1 = np.array([1, 0, 0, 0, 0])
-    print(net3.next_marking(net3_u1))
-
-
+    net3.next_marking(net3_u1)
+    net3.enabled_transitions()
 
 if __name__ == '__main__':
 
