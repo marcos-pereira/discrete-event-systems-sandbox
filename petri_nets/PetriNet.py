@@ -4,12 +4,14 @@ from graphviz import Digraph
 class PetriNet:
 
     incidence_matrix_ = np.array([])
+    marking_ = np.array([])
     arcs_ = set()
     arcs_place_transition_ = set()
     arcs_transition_place_ = set()
     place_to_label_ = dict()
     label_to_place_ = dict()
     transition_to_label_ = dict()
+    label_to_transition_ = dict()
 
     def __init__(self, places, transitions, init_marking, Aminus = np.array([]), Aplus = np.array([])):
         self.places_ = places
@@ -18,8 +20,10 @@ class PetriNet:
             self.place_to_label_[place_num] = places[place_num]
         self.transitions_ = transitions
         for transition_num in range(len(self.transitions_)):
+            self.label_to_transition_[transitions[transition_num]] = transition_num
             self.transition_to_label_[transition_num] = transitions[transition_num]
         self.init_marking_ = init_marking
+        self.marking_ = init_marking
         self.Aminus_ = Aminus
         self.Aplus_ = Aplus
         self.incidence_matrix_ = Aminus + Aplus
@@ -45,7 +49,7 @@ class PetriNet:
             num_cols_Aplus = np.shape(self.Aplus_)[1]
             for transition in range(num_rows_Aplus):
                 for place in range(num_cols_Aplus):
-                    # Add arc place, transition and weight if arc weight is nonzero
+                    # Add arc transition, place and weight if arc weight is nonzero
                     if self.Aplus_[transition,place] != 0:
                         arc = (transition, place, abs(self.Aplus_[transition, place]))
                         self.arcs_.add(arc)
@@ -124,10 +128,42 @@ class PetriNet:
         net.render(filename, view=show_output)
 
     def next_marking(self, u):
+        print("Transitions to fire:")
+        print(u)
         if len(self.incidence_matrix_) == len(u):
-            print("Next marking:")
             marking = self.init_marking_ + np.matmul(u,self.incidence_matrix_)
         else:
             print("Incidence matrix not initialized. Returning initial marking:")
             marking = self.init_marking_
+        self.marking_ = marking
+        print("Next marking:")
+        print(self.marking_)
         return marking
+
+    def enabled_transitions(self):
+        enabled_transitions = set()
+        for transition in self.transitions_:
+            ## Assume transition starts enabled
+            transition_enabled = True
+            ## Get corresponding input edges to transition
+            for arc in self.arcs_place_transition_:
+                arc_place = arc[0]
+                arc_transition = arc[1]
+                arc_weight = arc[2]
+                ## If arc transition corresponds to the transition
+                if arc_transition == self.label_to_transition_[transition]:
+                    ## Check for all places that have edges input to the transition
+                    # if the place marking is lower than the arc_weight
+                    for place in range(len(self.marking_)):
+                        if place == arc_place:
+                            if self.marking_[place] < arc_weight:
+                                transition_enabled = False
+
+            if transition_enabled == True:
+                enabled_transitions.add(transition)
+
+        print("Enabled transitions:")
+        print(enabled_transitions)
+
+
+
