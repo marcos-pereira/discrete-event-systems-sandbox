@@ -156,7 +156,7 @@ class PetriNet:
             edge_weight = str(edge[2])
             net.edge(node1, node2, edge_weight, fontsize='12')
 
-        ## Create automaton pdf and open it
+        ## Create net pdf and open it
         net.render(filename, view=show_output)
 
     def next_marking(self, u):
@@ -165,9 +165,7 @@ class PetriNet:
         # If incidence matrix is initialized
         if len(self.incidence_matrix_) == len(u):
             # Fire transition and get new marking
-            marking = self.init_marking_ + np.matmul(u,self.incidence_matrix_)
-            # Update init marking to be the marking after transition fired
-            self.init_marking_ = marking
+            marking = self.marking_ + np.matmul(u,self.incidence_matrix_)
         else:
             print("Incidence matrix not initialized. Returning initial marking:")
             marking = self.init_marking_
