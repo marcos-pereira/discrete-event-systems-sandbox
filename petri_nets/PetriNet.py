@@ -13,7 +13,13 @@ class PetriNet:
     transition_to_label_ = dict()
     label_to_transition_ = dict()
 
-    def __init__(self, places, transitions, init_marking, Aminus = np.array([]), Aplus = np.array([])):
+    def __init__(self,
+                 places,
+                 transitions,
+                 init_marking,
+                 Aminus = np.array([]),
+                 Aplus = np.array([]),
+                 incidence_matrix = np.array([])):
         self.places_ = places
         for place_num in range(len(self.places_)):
             self.label_to_place_[places[place_num]] = place_num
@@ -26,12 +32,15 @@ class PetriNet:
         self.marking_ = init_marking
         self.Aminus_ = Aminus
         self.Aplus_ = Aplus
-        self.incidence_matrix_ = Aminus + Aplus
+        if len(incidence_matrix != 0):
+            self.incidence_matrix_ = incidence_matrix
+        else:
+            self.incidence_matrix_ = Aminus + Aplus
 
     def set_incidence_matrix(self, incidence_matrix):
         self.incidence_matrix_ = incidence_matrix
 
-    def set_arcs(self):
+    def set_arcs_Aminus_Aplus(self):
         if len(self.Aminus_) !=0 and len(self.Aminus_) != 0:
             ## Add arcs from places to transitions
             num_rows_Aminus = np.shape(self.Aminus_)[0]
@@ -57,6 +66,29 @@ class PetriNet:
 
         else:
             print("Arcs not being set because Aminus and Aplus are not set")
+
+    def set_arcs_incidence_matrix(self):
+        if len(self.incidence_matrix_ != 0):
+            A = self.incidence_matrix_
+            num_rows_A = np.shape(A)[0]
+            num_cols_A = np.shape(A)[1]
+            ## Iterate through incidence matrix
+            for transition in range(num_rows_A):
+                for place in range(num_cols_A):
+                    # If number is negative, add an arc from place to transition
+                    # That is, the transition consumes tokens from the place
+                    if A[transition,place] < 0:
+                        arc = (place, transition, abs(A[transition,place]))
+                        self.arcs_.add(arc)
+                        self.arcs_place_transition_.add(arc)
+                    # If number is positive, add an arc from transition to place
+                    # That is, the transition add tokens to the place
+                    elif A[transition,place] > 0:
+                        arc = (transition, place, abs(A[transition,place]))
+                        self.arcs_.add(arc)
+                        self.arcs_transition_place_.add(arc)
+        else:
+            print("Incidence matrix not set")
 
     def print(self):
         print("Places:")
