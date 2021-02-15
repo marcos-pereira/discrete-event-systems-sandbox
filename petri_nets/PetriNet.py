@@ -162,8 +162,12 @@ class PetriNet:
     def next_marking(self, u):
         print("Transitions to fire:")
         print(u)
+        # If incidence matrix is initialized
         if len(self.incidence_matrix_) == len(u):
+            # Fire transition and get new marking
             marking = self.init_marking_ + np.matmul(u,self.incidence_matrix_)
+            # Update init marking to be the marking after transition fired
+            self.init_marking_ = marking
         else:
             print("Incidence matrix not initialized. Returning initial marking:")
             marking = self.init_marking_
@@ -194,8 +198,39 @@ class PetriNet:
             if transition_enabled == True:
                 enabled_transitions.add(transition)
 
-        print("Enabled transitions:")
-        print(enabled_transitions)
+        return enabled_transitions
+
+    def run_net(self):
+        transition_to_fire = ''
+        while True:
+            print("-----------------------------------")
+            if transition_to_fire == "exit":
+                break
+            print("Transitions labels:")
+            print(self.transitions_)
+            print("Enabled transitions:")
+            print(self.enabled_transitions())
+            print("Enter transition to fire:")
+            transition_to_fire = input()
+            # If transition label is wrong, ask for new transition label
+            if transition_to_fire not in self.transitions_:
+                print("Wrong transition label!")
+            else:
+                print("Transition number:")
+                transition_number = self.label_to_transition_[transition_to_fire]
+                print(transition_number)
+
+                # Initialize input vector with zeros
+                u = np.zeros(len(self.transitions_))
+                # Make respective transition equals 1 to fire it
+                u[transition_number] = 1
+                print("Input vector:")
+                print(u)
+
+                # Run net after firing transition
+                self.next_marking(u)
+
+
 
 
 
