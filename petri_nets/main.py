@@ -58,7 +58,13 @@ def main():
     net3.print()
     net3.plot('net3', show_output)
     net3.enabled_transitions()
-    net3.run_net()
+    # net3.run_net()
+    [net3_transitions_fired, net3_markings] = net3.run_net_randomly(5)
+    print("Net3 transitions fired:")
+    print(net3_transitions_fired)
+    print("Net3 markings:")
+    for net3_marking in net3_markings:
+        print(net3_marking)
 
 
 if __name__ == '__main__':

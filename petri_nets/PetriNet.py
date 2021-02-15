@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from graphviz import Digraph
 
 class PetriNet:
@@ -168,7 +169,7 @@ class PetriNet:
         net.render(filename, view=show_output)
 
     def next_marking(self, u):
-        print("Transitions to fire:")
+        print("Input u:")
         print(u)
         # If incidence matrix is initialized
         if len(self.incidence_matrix_) == len(u):
@@ -237,6 +238,32 @@ class PetriNet:
                 self.next_marking(u)
 
                 self.plot("net_state",True)
+
+    def run_net_randomly(self, num_steps):
+        transitions_fired = list()
+        markings = list()
+        markings.append(self.marking_)
+        for step in range(num_steps):
+            print("-----------------------------------")
+            # Get enabled transitions
+            enabled_transitions = self.enabled_transitions()
+            # Select randomly transition to fire
+            transition_to_fire = random.sample(enabled_transitions,1)[0]
+            print("Transition to fire:")
+            print(transition_to_fire)
+            transitions_fired.append(transition_to_fire)
+            transition_number = self.label_to_transition_[transition_to_fire]
+            # Initialize input vector with zeros
+            u = np.zeros(len(self.transitions_))
+            # Make respective transition equals 1 to fire it
+            u[transition_number] = 1
+            # Ru net after firing transition
+            self.next_marking(u)
+            markings.append(self.marking_)
+
+        return transitions_fired, markings
+
+
 
 
 
