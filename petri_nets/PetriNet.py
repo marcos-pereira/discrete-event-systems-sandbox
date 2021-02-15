@@ -129,8 +129,8 @@ class PetriNet:
         ## Create net places
         for place in self.places_:
             place_label = place
-            if self.init_marking_[self.label_to_place_[place]] != 0:
-                place_marking = str(self.init_marking_[self.label_to_place_[place]])
+            if self.marking_[self.label_to_place_[place]] != 0:
+                place_marking = str(self.marking_[self.label_to_place_[place]])
             else:
                 place_marking = ""
             net.attr('node', shape='circle', fontsize='12')
@@ -147,14 +147,22 @@ class PetriNet:
             node1 = str(self.place_to_label_[edge[0]])
             node2 = str(self.transition_to_label_[edge[1]])
             edge_weight = str(edge[2])
-            net.edge(node1, node2, edge_weight)
+            # If edge weight equals 1, do not plot 1 to make drawing clearer
+            if edge[2] == 1:
+                net.edge(node1, node2)
+            else:
+                net.edge(node1, node2, edge_weight)
 
         ## Create transition->place edges
         for edge in self.arcs_transition_place_:
             node1 = str(self.transition_to_label_[edge[0]])
             node2 = str(self.place_to_label_[edge[1]])
             edge_weight = str(edge[2])
-            net.edge(node1, node2, edge_weight, fontsize='12')
+            # If edge weight equals 1, do not plot 1 to make drawing clearer
+            if edge[2] == 1:
+                net.edge(node1, node2)
+            else:
+                net.edge(node1, node2, edge_weight, fontsize='12')
 
         ## Create net pdf and open it
         net.render(filename, view=show_output)
@@ -211,8 +219,8 @@ class PetriNet:
             print("Enter transition to fire:")
             transition_to_fire = input()
             # If transition label is wrong, ask for new transition label
-            if transition_to_fire not in self.transitions_:
-                print("Wrong transition label!")
+            if transition_to_fire not in self.transitions_ or transition_to_fire not in self.enabled_transitions():
+                print("Wrong transition label or transition not enabled!")
             else:
                 print("Transition number:")
                 transition_number = self.label_to_transition_[transition_to_fire]
@@ -227,6 +235,8 @@ class PetriNet:
 
                 # Run net after firing transition
                 self.next_marking(u)
+
+                self.plot("net_state",True)
 
 
 
