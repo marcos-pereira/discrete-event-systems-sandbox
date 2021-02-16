@@ -59,13 +59,31 @@ def main():
     net3.plot('net3', show_output)
     net3.enabled_transitions()
     # net3.run_net()
-    [net3_transitions_fired, net3_markings] = net3.run_net_randomly(5)
+    [net3_transitions_fired, net3_markings] = net3.run_net_randomly(20)
     print("Net3 transitions fired:")
     print(net3_transitions_fired)
     print("Net3 markings:")
     for net3_marking in net3_markings:
         print(net3_marking)
 
+    ## Chapter 3, exercise 6
+    net4_places = ['P1', 'P2']
+    net4_transitions = ['t1', 't2', 't3', 't4']
+    net4_init_marking = np.array([0, 1])
+    net4_incidence_matrix = np.array([[1, 0],
+                                      [-1, 0],
+                                      [0, 1],
+                                      [0, -1]])
+    net4 = PetriNet(net4_places, net4_transitions, net4_init_marking)
+    net4.set_incidence_matrix(net4_incidence_matrix)
+    net4.set_arcs_incidence_matrix()
+    net4_constraints_matrix = np.array([[1],
+                                        [-1]])
+    net4_constraints_vector = np.array([-1])
+    net4.plot('net4', True)
+    net4.control_net(net4_constraints_matrix, net4_constraints_vector)
+    net4.set_arcs_incidence_matrix()
+    net4.plot('net4_controlled', True)
 
 if __name__ == '__main__':
 

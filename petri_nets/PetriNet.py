@@ -4,16 +4,6 @@ from graphviz import Digraph
 
 class PetriNet:
 
-    incidence_matrix_ = np.array([])
-    marking_ = np.array([])
-    arcs_ = set()
-    arcs_place_transition_ = set()
-    arcs_transition_place_ = set()
-    place_to_label_ = dict()
-    label_to_place_ = dict()
-    transition_to_label_ = dict()
-    label_to_transition_ = dict()
-
     def __init__(self,
                  places,
                  transitions,
@@ -21,20 +11,31 @@ class PetriNet:
                  Aminus = np.array([]),
                  Aplus = np.array([]),
                  incidence_matrix = np.array([])):
-        self.places_ = places
+        # Create some class instance variables
+        self.incidence_matrix_ = np.array([])
+        self.marking_ = np.array([])
+        self.arcs_ = set()
+        self.arcs_place_transition_ = set()
+        self.arcs_transition_place_ = set()
+        self.place_to_label_ = dict()
+        self.label_to_place_ = dict()
+        self.transition_to_label_ = dict()
+        self.label_to_transition_ = dict()
+
+        self.places_ = places.copy()
         for place_num in range(len(self.places_)):
             self.label_to_place_[places[place_num]] = place_num
             self.place_to_label_[place_num] = places[place_num]
-        self.transitions_ = transitions
+        self.transitions_ = transitions.copy()
         for transition_num in range(len(self.transitions_)):
             self.label_to_transition_[transitions[transition_num]] = transition_num
             self.transition_to_label_[transition_num] = transitions[transition_num]
-        self.init_marking_ = init_marking
-        self.marking_ = init_marking
-        self.Aminus_ = Aminus
-        self.Aplus_ = Aplus
+        self.init_marking_ = init_marking.copy()
+        self.marking_ = init_marking.copy()
+        self.Aminus_ = Aminus.copy()
+        self.Aplus_ = Aplus.copy()
         if len(incidence_matrix != 0):
-            self.incidence_matrix_ = incidence_matrix
+            self.incidence_matrix_ = incidence_matrix.copy()
         else:
             self.incidence_matrix_ = Aminus + Aplus
 
@@ -262,6 +263,43 @@ class PetriNet:
             markings.append(self.marking_)
 
         return transitions_fired, markings
+
+    def control_net(self, net_constraints_matrix, net_constraints_vector):
+        controller_incidence_matrix = -np.matmul(self.incidence_matrix_,net_constraints_matrix)
+        print("Controller incidence matrix:")
+        print(controller_incidence_matrix)
+
+        controller_init_marking = net_constraints_vector - np.matmul(self.init_marking_,net_constraints_matrix)
+        print("Controller initial marking:")
+        print(controller_init_marking)
+
+        complete_incidence_matrix = np.concatenate((self.incidence_matrix_, controller_incidence_matrix), axis=1)
+        print("Complete incidence matrix:")
+        print(complete_incidence_matrix)
+
+        complete_init_marking = np.concatenate((self.init_marking_, controller_init_marking))
+        print("Complete initial marking:")
+        print(complete_init_marking)
+
+        # Update incidence matrix
+        self.incidence_matrix_ = complete_incidence_matrix
+
+        # Update init marking and marking
+        self.init_marking_ = complete_init_marking
+        self.marking_ = complete_init_marking
+
+        # Add control places to net places
+        for control_place in range(len(controller_init_marking)):
+            self.places_.append("C"+str(control_place))
+
+        # Clear dictionaries
+        self.label_to_place_ = dict()
+        self.place_to_label_ = dict()
+
+        # Update dictionaries
+        for place_num in range(len(self.places_)):
+            self.label_to_place_[self.places_[place_num]] = place_num
+            self.place_to_label_[place_num] = self.places_[place_num]
 
 
 
