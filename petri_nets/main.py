@@ -80,10 +80,34 @@ def main():
     net4_constraints_matrix = np.array([[1],
                                         [-1]])
     net4_constraints_vector = np.array([-1])
-    net4.plot('net4', True)
+    net4.plot('net4', False)
     net4.control_net(net4_constraints_matrix, net4_constraints_vector)
     net4.set_arcs_incidence_matrix()
-    net4.plot('net4_controlled', True)
+    net4.plot('net4_controlled', False)
+
+    ## Chapter 3, exercise 9
+    net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']
+    net5_transitions = ['t1', 't2', 't3', 't4', 't5']
+    net5_init_marking = np.array([0, 0, 0, 1, 4, 4])
+    net5_incidence_matrix = np.array([[1, 0, 0, 0, -1, 0],
+                                      [0, 1, 0, 0, 0, -1],
+                                      [-1, 0, 1, -1, 1, 0],
+                                      [0, -1, 1, -1, 0, 1],
+                                      [0, 0, -1, 1, 0, 0]])
+    net5 = PetriNet(net5_places, net5_transitions, net5_init_marking)
+    net5.set_incidence_matrix(net5_incidence_matrix)
+    net5.set_arcs_incidence_matrix()
+    net5_constraints_matrix = np.array([[1],
+                                        [1],
+                                        [1],
+                                        [0],
+                                        [0],
+                                        [0]])
+    net5_constraints_vector = np.array([8])
+    net5.plot('net5', True)
+    net5.control_net(net5_constraints_matrix, net5_constraints_vector)
+    net5.set_arcs_incidence_matrix()
+    net5.plot('net5_controlled', True)
 
 if __name__ == '__main__':
 
