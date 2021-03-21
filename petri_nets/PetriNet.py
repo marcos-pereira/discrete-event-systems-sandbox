@@ -14,6 +14,9 @@ class PetriNet:
         # Create some class instance variables
         self.incidence_matrix_ = np.array([])
         self.marking_ = np.array([])
+        self.tokens_type_ = list()
+        self.token_to_label_ = dict()
+        self.label_to_token_ = dict()
         self.arcs_ = set()
         self.arcs_place_transition_ = set()
         self.arcs_transition_place_ = set()
@@ -91,6 +94,12 @@ class PetriNet:
                         self.arcs_transition_place_.add(arc)
         else:
             print("Incidence matrix not set")
+
+    def set_tokens_type(self,tokens_type):
+        self.tokens_type_ = tokens_type.copy()
+        for token_num in range(len(self.tokens_type_)):
+            self.label_to_token_[self.tokens_type_[token_num]] = token_num
+            self.token_to_label_[token_num] = self.tokens_type_[token_num]
 
     def print(self):
         print("Places:")
