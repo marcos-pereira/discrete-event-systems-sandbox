@@ -15,8 +15,12 @@ class PetriNet:
         self.incidence_matrix_ = np.array([])
         self.marking_ = np.array([])
         self.tokens_type_ = list()
+        self.tokens_sequence_ = list()
+        self.places_tokens = list(list())
         self.token_to_label_ = dict()
         self.label_to_token_ = dict()
+        self.logic_transitions_ = list()
+        self.transitions_logic_ = list()
         self.arcs_ = set()
         self.arcs_place_transition_ = set()
         self.arcs_transition_place_ = set()
@@ -100,6 +104,18 @@ class PetriNet:
         for token_num in range(len(self.tokens_type_)):
             self.label_to_token_[self.tokens_type_[token_num]] = token_num
             self.token_to_label_[token_num] = self.tokens_type_[token_num]
+
+    def set_places_tokens(self,places_tokens):
+        self.places_tokens = places_tokens.copy()
+
+    def set_logic_transitions(self, logic_transitions):
+        self.logic_transitions_ = logic_transitions.copy()
+
+    def set_tokens_sequence(self, tokens_sequence):
+        self.tokens_sequence_ = tokens_sequence.copy()
+
+    def set_transitions_logic(self, transitions_logic):
+        self.transitions_logic_ = transitions_logic.copy()
 
     def print(self):
         print("Places:")
@@ -219,6 +235,7 @@ class PetriNet:
 
     def run_net(self):
         transition_to_fire = ''
+        transitions_firing_num = np.zeros(len(self.transitions_))
         while True:
             print("-----------------------------------")
             if transition_to_fire == "exit":
@@ -237,6 +254,15 @@ class PetriNet:
                 transition_number = self.label_to_transition_[transition_to_fire]
                 print(transition_number)
 
+                # Apply transitions logic if any
+                if transition_to_fire in self.logic_transitions_:
+                    # Get logic of transition as a lambda function
+                    transition_condition = self.transitions_logic_[transition_number](transitions_firing_num[transition_number])
+                    print(transition_condition)
+
+                    # Update number of firings
+                    transitions_firing_num[transition_number] += 1
+
                 # Initialize input vector with zeros
                 u = np.zeros(len(self.transitions_))
                 # Make respective transition equals 1 to fire it
@@ -248,6 +274,16 @@ class PetriNet:
                 self.next_marking(u)
 
                 self.plot("net_state",True)
+
+    def transition_logic(self,
+                         transition_to_fire,
+                         transition_number,
+                         transitions_firing_num):
+        if transition_number == 0:
+            transition_condition = self.transitions_logic_[transition_number](transitions_firing_num[transition_number])
+        if transition_number == 1:
+            transition_condition = self.transitions_logic_[transition_number](transitions_firing_num[transition_number])
+
 
     def run_net_randomly(self, num_steps):
         transitions_fired = list()
