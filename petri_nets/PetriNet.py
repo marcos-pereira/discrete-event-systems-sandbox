@@ -348,6 +348,18 @@ class PetriNet:
                         print("Tokens matrix after firing:")
                         print(tokens_matrix)
 
+                    if self.logic_transitions_[logic_transition_index][1] == 'reset_count':
+                        # Each row contain the place where the token of a given type is located
+                        # Each column corresponds to a place
+                        tokens_matrix = np.zeros((len(self.tokens_type_), len(self.places_)))
+
+                        # Reset tokens matrix
+                        for place in self.places_:
+                            place_num = self.label_to_place_[place]
+                            for token in self.places_tokens[place_num]:
+                                token_num = self.label_to_token_[token]
+                                tokens_matrix[token_num][place_num] = 1.0
+
                     # If the transition is of a choice type, use the type of token
                     if self.logic_transitions_[logic_transition_index][1] == 'choice':
                         ## Get corresponding place before choice transition
