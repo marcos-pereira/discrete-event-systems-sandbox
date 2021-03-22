@@ -209,6 +209,20 @@ class PetriNet:
         print(self.marking_)
         return marking
 
+    def next_marking_manually(self, u, marking):
+        print("Input u:")
+        print(u)
+        # If incidence matrix is initialized
+        if len(self.incidence_matrix_) == len(u):
+            # Fire transition and get new marking
+            next_marking = marking + np.matmul(u,self.incidence_matrix_)
+        else:
+            print("Incidence matrix not initialized. Returning initial marking:")
+            next_marking = self.init_marking_
+        print("Next marking manually:")
+        print(next_marking)
+        return next_marking
+
     def enabled_transitions(self):
         enabled_transitions = set()
         for transition in self.transitions_:
@@ -235,7 +249,6 @@ class PetriNet:
 
     def run_net(self):
         transition_to_fire = ''
-        transitions_firing_num = np.zeros(len(self.transitions_))
         while True:
             print("-----------------------------------")
             if transition_to_fire == "exit":
@@ -254,14 +267,53 @@ class PetriNet:
                 transition_number = self.label_to_transition_[transition_to_fire]
                 print(transition_number)
 
-                # Apply transitions logic if any
-                if transition_to_fire in self.logic_transitions_:
-                    # Get logic of transition as a lambda function
-                    transition_condition = self.transitions_logic_[transition_number](transitions_firing_num[transition_number])
-                    print(transition_condition)
+                # Initialize input vector with zeros
+                u = np.zeros(len(self.transitions_))
+                # Make respective transition equals 1 to fire it
+                u[transition_number] = 1
+                print("Input vector:")
+                print(u)
 
-                    # Update number of firings
-                    transitions_firing_num[transition_number] += 1
+                # Run net after firing transition
+                self.next_marking(u)
+
+                self.plot("net_state",True)
+
+    def run_conditional_timed_net(self):
+        transition_to_fire = ''
+        token = tuple()
+
+        # Count the number of times a transition has been fired
+        transitions_firing_num = np.zeros(len(self.transitions_))
+
+        # Each row contain the place where the token of a given type is located
+        # Each column corresponds to a place
+        tokens_matrix = np.zeros((len(self.tokens_type_),len(self.places_)))
+
+        # Initialize tokens matrix
+        for place in self.places_:
+            place_num = self.label_to_place_[place]
+            for token in self.places_tokens[place_num]:
+                token_num = self.label_to_token_[token]
+                tokens_matrix[token_num][place_num] = 1.0
+
+        while True:
+            print("-----------------------------------")
+            if transition_to_fire == "exit":
+                break
+            print("Transitions labels:")
+            print(self.transitions_)
+            print("Enabled transitions:")
+            print(self.enabled_transitions())
+            print("Enter transition to fire:")
+            transition_to_fire = input()
+            # If transition label is wrong, ask for new transition label
+            if transition_to_fire not in self.transitions_ or transition_to_fire not in self.enabled_transitions():
+                print("Wrong transition label or transition not enabled!")
+            else:
+                print("Transition number:")
+                transition_number = self.label_to_transition_[transition_to_fire]
+                print(transition_number)
 
                 # Initialize input vector with zeros
                 u = np.zeros(len(self.transitions_))
@@ -269,6 +321,89 @@ class PetriNet:
                 u[transition_number] = 1
                 print("Input vector:")
                 print(u)
+
+                # Apply transitions logic if any
+                logic_transitions = [transition[0] for transition in self.logic_transitions_]
+                print(logic_transitions)
+                if transition_to_fire in logic_transitions:
+                    # Get index of logic transition being fired
+                    for logic_transition in self.logic_transitions_:
+                        if logic_transition[0] == transition_to_fire:
+                            logic_transition_index = self.logic_transitions_.index(logic_transition)
+                    # If the transition condition is of a count type, use the number of firings the transition had
+                    if self.logic_transitions_[logic_transition_index][1] == 'count':
+                        # Get logic of transition as a lambda function: get token type based on the number of times the transition fired
+                        transition_condition = self.transitions_logic_[transition_number](transitions_firing_num[transition_number])
+                        print("Transition_condition:")
+                        print(transition_condition)
+                        token_type = transition_condition
+                        token_num = self.label_to_token_[token_type]
+                        token = (token_type, token_num)
+
+                        # Run net for the given token type
+                        print("Tokens matrix before firing:")
+                        print(tokens_matrix)
+                        next_marking = self.next_marking_manually(u, tokens_matrix[token_num])
+                        tokens_matrix[token_num] = next_marking
+                        print("Tokens matrix after firing:")
+                        print(tokens_matrix)
+
+                    # If the transition is of a choice type, use the type of token
+                    if self.logic_transitions_[logic_transition_index][1] == 'choice':
+                        ## Get corresponding place before choice transition
+                        for arc in self.arcs_place_transition_:
+                            arc_place = arc[0]
+                            arc_transition = arc[1]
+                            ## If arc transition corresponds to the transition
+                            if arc_transition == transition_number:
+                                for token_type in self.tokens_type_:
+                                    token_num = self.label_to_token_[token_type]
+                                    print(token_type)
+                                    print(token_num)
+                                    print(tokens_matrix[token_num][arc_place])
+                                    if tokens_matrix[token_num][arc_place] == 1.0:
+                                        place_token_type = token_type
+                                        place_token_num = self.label_to_token_[place_token_type]
+                                        break # token type found
+                                # Get logic of transition as a lambda function: get transition based on the place token type
+                                transition_condition = self.transitions_logic_[logic_transition_index](place_token_type)
+                                print("Transition_condition:")
+                                print(transition_condition)
+                                break  # transition found
+
+                        # Update transition to fire
+                        # print(transition_condition)
+                        # transition_to_fire = transition_condition
+                        # transition_number = self.label_to_transition_[transition_to_fire]
+
+                        print("Transition to be fired due to transition condition:")
+                        print(transition_to_fire)
+                        # Initialize input vector with zeros
+                        u = np.zeros(len(self.transitions_))
+                        # Make respective transition equals 1 to fire it
+                        u[transition_number] = 1
+                        print("Input vector:")
+                        print(u)
+
+                        # Run net for the given token type
+                        print("Tokens matrix before firing:")
+                        print(tokens_matrix)
+                        next_marking = self.next_marking_manually(u, tokens_matrix[place_token_num])
+                        tokens_matrix[token_num] = next_marking
+                        print("Tokens matrix after firing:")
+                        print(tokens_matrix)
+
+                else:
+                    # Run net for the given token type
+                    print("Tokens matrix before firing:")
+                    print(tokens_matrix)
+                    next_marking = self.next_marking_manually(u, tokens_matrix[token[1]])
+                    tokens_matrix[token_num] = next_marking
+                    print("Tokens matrix after firing:")
+                    print(tokens_matrix)
+
+                # Update number of firings
+                transitions_firing_num[transition_number] += 1
 
                 # Run net after firing transition
                 self.next_marking(u)
