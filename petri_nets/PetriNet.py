@@ -385,8 +385,12 @@ class PetriNet:
 
                         # Update transition to fire
                         # print(transition_condition)
-                        # transition_to_fire = transition_condition
-                        # transition_number = self.label_to_transition_[transition_to_fire]
+                        transition_to_fire = transition_condition
+                        transition_number = self.label_to_transition_[transition_to_fire]
+
+                        if transition_to_fire != transition_condition:
+                            print("Transition not enabled due to transition condition!")
+                            continue
 
                         print("Transition to be fired due to transition condition:")
                         print(transition_to_fire)
