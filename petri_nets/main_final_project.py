@@ -58,7 +58,7 @@ def main():
     net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15']
     net5_transitions = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11']
     net5_init_marking = np.array([3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0])
-    p1_t = 0
+    p1_t = 1
     p2_t = 3
     p3_t = 0
     p4_t = 0
