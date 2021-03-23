@@ -14,6 +14,7 @@ class PetriNet:
         # Create some class instance variables
         self.incidence_matrix_ = np.array([])
         self.marking_ = np.array([])
+        self.places_time = np.array([])
         self.tokens_type_ = list()
         self.tokens_sequence_ = list()
         self.places_tokens = list(list())
@@ -116,6 +117,9 @@ class PetriNet:
 
     def set_transitions_logic(self, transitions_logic):
         self.transitions_logic_ = transitions_logic.copy()
+
+    def set_places_time(self, places_time):
+        self.places_time = places_time.copy()
 
     def print(self):
         print("Places:")
@@ -279,8 +283,43 @@ class PetriNet:
 
                 self.plot("net_state",True)
 
+    def run_timed_net(self):
+        transition_to_fire = ''
+        while True:
+            print("-----------------------------------")
+            if transition_to_fire == "exit":
+                break
+            print("Transitions labels:")
+            print(self.transitions_)
+            print("Enabled transitions:")
+            print(self.enabled_transitions())
+            print("Enter transition to fire:")
+            transition_to_fire = input()
+            # If transition label is wrong, ask for new transition label
+            if transition_to_fire not in self.transitions_ or transition_to_fire not in self.enabled_transitions():
+                print("Wrong transition label or transition not enabled!")
+            else:
+                print("Transition number:")
+                transition_number = self.label_to_transition_[transition_to_fire]
+                print(transition_number)
+
+                # Initialize input vector with zeros
+                u = np.zeros(len(self.transitions_))
+                # Make respective transition equals 1 to fire it
+                u[transition_number] = 1
+                print("Input vector:")
+                print(u)
+
+                # Run net after firing transition
+                self.next_marking(u)
+
+                self.plot("net_state",True)
+
     def run_conditional_timed_net(self):
         transition_to_fire = ''
+
+        # Element 0: token type
+        # Element 1: token number
         token = tuple()
 
         # Count the number of times a transition has been fired
@@ -293,9 +332,35 @@ class PetriNet:
         # Initialize tokens matrix
         for place in self.places_:
             place_num = self.label_to_place_[place]
-            for token in self.places_tokens[place_num]:
-                token_num = self.label_to_token_[token]
+            for token_in_place in self.places_tokens[place_num]:
+                token_num = self.label_to_token_[token_in_place]
                 tokens_matrix[token_num][place_num] = 1.0
+
+        # Time instants when each place receives its k-th token
+        # places_current_time = self.places_time.copy()
+        places_current_time = np.zeros((len(self.tokens_type_),len(self.places_)))
+
+        # Time instant of the k-th firing of each transition
+        transitions_current_time = np.zeros((len(self.tokens_type_),len(self.transitions_)))
+
+        # Update current time of each transition
+        for transition in self.transitions_:
+            transition_num = self.label_to_transition_[transition]
+            ## Get corresponding place before transition
+            for arc in self.arcs_place_transition_:
+                arc_place = arc[0]
+                arc_transition = arc[1]
+                ## If arc transition corresponds to the transition
+                if arc_transition == transition_num:
+                    for token_type in self.tokens_type_:
+                        token_num = self.label_to_token_[token_type]
+                        transitions_current_time[token_num][transition_num] = self.places_time[token_num][arc_place]
+
+        # Time of last fired transition
+        last_fired_transition_time = 0
+
+        # Net current time
+        net_time = 0
 
         while True:
             print("-----------------------------------")
@@ -305,6 +370,7 @@ class PetriNet:
             print(self.transitions_)
             print("Enabled transitions:")
             print(self.enabled_transitions())
+            enabled_transitions = self.enabled_transitions()
             print("Enter transition to fire:")
             transition_to_fire = input()
             # If transition label is wrong, ask for new transition label
@@ -338,6 +404,7 @@ class PetriNet:
                         print(transition_condition)
                         token_type = transition_condition
                         token_num = self.label_to_token_[token_type]
+                        # This token will be the same until the next time this transition fires
                         token = (token_type, token_num)
 
                         # Run net for the given token type
@@ -360,6 +427,12 @@ class PetriNet:
                                 token_num = self.label_to_token_[token]
                                 tokens_matrix[token_num][place_num] = 1.0
 
+                        # Reset places current time
+                        places_current_time = np.zeros((len(self.tokens_type_), len(self.places_)))
+
+                        # Reset token
+                        token =(self.tokens_type_[0], self.label_to_token_[self.tokens_type_[0]])
+
                     # If the transition is of a choice type, use the type of token
                     if self.logic_transitions_[logic_transition_index][1] == 'choice':
                         ## Get corresponding place before choice transition
@@ -370,9 +443,9 @@ class PetriNet:
                             if arc_transition == transition_number:
                                 for token_type in self.tokens_type_:
                                     token_num = self.label_to_token_[token_type]
-                                    print(token_type)
-                                    print(token_num)
-                                    print(tokens_matrix[token_num][arc_place])
+                                    # print(token_type)
+                                    # print(token_num)
+                                    # print(tokens_matrix[token_num][arc_place])
                                     if tokens_matrix[token_num][arc_place] == 1.0:
                                         place_token_type = token_type
                                         place_token_num = self.label_to_token_[place_token_type]
@@ -383,10 +456,12 @@ class PetriNet:
                                 print(transition_condition)
                                 break  # transition found
 
-                        # Update transition to fire
-                        # print(transition_condition)
+                        # Update transition to fire considering condition
                         transition_to_fire = transition_condition
                         transition_number = self.label_to_transition_[transition_to_fire]
+
+                        # Update enabled transitions based on condition
+                        enabled_transitions = {transition_to_fire}
 
                         if transition_to_fire != transition_condition:
                             print("Transition not enabled due to transition condition!")
@@ -413,6 +488,7 @@ class PetriNet:
                     # Run net for the given token type
                     print("Tokens matrix before firing:")
                     print(tokens_matrix)
+                    # token determined on first transition
                     next_marking = self.next_marking_manually(u, tokens_matrix[token[1]])
                     tokens_matrix[token_num] = next_marking
                     print("Tokens matrix after firing:")
@@ -420,6 +496,77 @@ class PetriNet:
 
                 # Update number of firings
                 transitions_firing_num[transition_number] += 1
+
+                places_without_0 = [place for place in self.places_ if self.label_to_place_[place] != 0]
+                for place in places_without_0:
+                    place_num = self.label_to_place_[place]
+                    for token_type in self.tokens_type_:
+                        token_num = self.label_to_token_[token_type]
+                        places_current_time[token_num][place_num] = places_current_time[token_num][place_num-1] + \
+                                                                    self.places_time[token_num][place_num-1]
+                print("Places current time:")
+                print(places_current_time)
+
+                enabled_transitions_places = list()
+
+                for place in self.places_:
+                    place_num = self.label_to_place_[place]
+                    for token_type in self.tokens_type_:
+                        token_num = self.label_to_token_[token_type]
+                        for arc in self.arcs_place_transition_:
+                            arc_place = arc[0]
+                            arc_transition = arc[1]
+                            ## If arc transition corresponds to the place
+                            if arc_place == place_num:
+                                transition = self.transition_to_label_[arc_transition]
+                                if transition in enabled_transitions:
+                                    enabled_transitions_places.append(places_current_time[token[1]][place_num])
+
+                net_time += min(enabled_transitions_places)
+
+                # Update current time of each transition
+                # for transition in self.transitions_:
+                #     transition_num = self.label_to_transition_[transition]
+                #     ## Get corresponding place before transition
+                #     for arc in self.arcs_place_transition_:
+                #         arc_place = arc[0]
+                #         arc_transition = arc[1]
+                #         ## If arc transition corresponds to the transition
+                #         if arc_transition == transition_num:
+                #             if transition in enabled_transitions:
+                #                 transitions_current_time[token[1]][transition_num] = transitions_current_time[token[1]][transition_num] - \
+                #                                                                      net_time
+                #             else:
+                #                 transitions_current_time[token[1]][transition_num] = self.places_time[token[1]][arc_place]
+                # print("Transitions current time:")
+                # print(transitions_current_time)
+                # last_fired_transition_time = transitions_current_time[token[1]][transition_number]
+
+                # enabled_transitions_places = list()
+                #
+                # # Update current time of each place
+                # for place in self.places_:
+                #     place_num = self.label_to_place_[place]
+                #     ## Get corresponding place before transition
+                #     for arc in self.arcs_place_transition_:
+                #         arc_place = arc[0]
+                #         arc_transition = arc[1]
+                #         ## If arc transition corresponds to the place
+                #         if arc_place == place_num:
+                #             transition = self.transition_to_label_[arc_transition]
+                #             if transition in enabled_transitions:
+                #                 places_current_time[token[1]][place_num] = places_current_time[token[1]][place_num] - \
+                #                                                            transitions_current_time[token[1]][arc_transition]
+                #                 enabled_transitions_places.append(places_current_time[token[1]][place_num])
+                #             else:
+                #                 places_current_time[token[1]][place_num] = self.places_time[token[1]][place_num]
+                # print("Places current time:")
+                # print(places_current_time)
+
+                # net_time += min(enabled_transitions_places)
+
+                print("Net time:")
+                print(net_time)
 
                 # Run net after firing transition
                 self.next_marking(u)
