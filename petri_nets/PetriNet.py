@@ -1,6 +1,7 @@
 import numpy as np
 import random
 from graphviz import Digraph
+import time
 
 class PetriNet:
 
@@ -283,10 +284,13 @@ class PetriNet:
 
                 self.plot("net_state",True)
 
-    def timed_enabled_transitions(self, places_time, current_places_time, transitions_time):
+    def timed_enabled_transitions(self, places_time, transitions_time):
         enabled_transitions = set()
         enabled_transitions_time = set()
-        timed_transitions_to_places = dict()
+
+        # Create a dict of list because every transition can have more than one place
+        transitions_to_input_places = dict()
+
         for transition in self.transitions_:
             transition_num = self.label_to_transition_[transition]
             # Store the time of the places before a transition
@@ -300,16 +304,21 @@ class PetriNet:
                 arc_weight = arc[2]
                 ## If arc transition corresponds to the transition
                 if arc_transition == self.label_to_transition_[transition]:
+                    # Places with arcs to a given transition
+                    input_places_to_transition = list()
                     ## Check for all places that have edges input to the transition
                     # if the place marking is lower than the arc_weight
                     for place in self.places_:
                         place_num = self.label_to_place_[place]
                         if place_num == arc_place:
-                            timed_transitions_to_places[transition_num] = place_num
+                            # A transition may have many input places
+                            input_places_to_transition.append(place_num)
                             # Store the time of the place
                             time_places_before_transition.append(places_time[place_num])
                             if self.marking_[place_num] < arc_weight:
                                 transition_enabled = False
+                    # Map transition to input places of the transition
+                    transitions_to_input_places[transition_num] = input_places_to_transition
 
             # The transition time is the time of the place with the max waiting time
             transitions_time[transition_num] = max(time_places_before_transition)
@@ -330,9 +339,9 @@ class PetriNet:
                 # enabled_transitions_time.add(transitions_time[transition_num])
 
 
-        return enabled_transitions, transitions_time, timed_transitions_to_places
+        return enabled_transitions, transitions_time, transitions_to_input_places
 
-    def run_timed_net(self):
+    def run_timed_net(self, run_time, frame_time):
         transition_to_fire = ''
         current_places_time = self.places_time.copy()
         current_transitions_time = np.zeros((len(self.transitions_)))
@@ -363,7 +372,7 @@ class PetriNet:
         # Running time of the net
         net_time = 0
 
-        while True:
+        while net_time < run_time:
             print("-----------------------------------")
 
             if transition_to_fire == "exit":
@@ -373,15 +382,37 @@ class PetriNet:
             print(self.transitions_)
 
             print("Enabled transitions:")
-            timed_enabled_transitions, current_transitions_time, timed_transitions_to_places = \
-                self.timed_enabled_transitions(self.places_time, current_places_time, current_transitions_time)
-            print(timed_enabled_transitions)
+            enabled_transitions, current_transitions_time, transitions_to_input_places = \
+                self.timed_enabled_transitions(self.places_time, current_transitions_time)
+            print(enabled_transitions)
 
-            print("Enter transition to fire:")
-            transition_to_fire = input()
+            # print("Enter transition to fire:")
+            # transition_to_fire = input()
+
+            # Transitions times of enabled transitions
+            enabled_transitions_times = list()
+
+            # Timed enabled transitions
+            timed_enabled_transitions = list()
+
+            # Update places current time
+            for transition in self.transitions_:
+                transition_num = self.label_to_transition_[transition]
+                if transition in enabled_transitions:
+                    for place_num in transitions_to_input_places[transition_num]:
+                        current_places_time[place_num] = \
+                            current_places_time[place_num] - current_transitions_time[transition_num]
+                        enabled_transitions_times.append(current_transitions_time[transition_num])
+                        timed_enabled_transitions.append(transition)
+                if transition not in enabled_transitions:
+                    for place_num in transitions_to_input_places[transition_num]:
+                        current_places_time[place_num] = self.places_time[place_num]
+
+            minimum_time_transition = enabled_transitions_times.index(min(enabled_transitions_times))
+            transition_to_fire = timed_enabled_transitions[minimum_time_transition]
 
             # If transition label is wrong, ask for new transition label
-            if transition_to_fire not in self.transitions_ or transition_to_fire not in timed_enabled_transitions:
+            if transition_to_fire not in self.transitions_ or transition_to_fire not in enabled_transitions:
                 print("Wrong transition label or transition not enabled!")
             else:
                 print("Transition number:")
@@ -420,20 +451,10 @@ class PetriNet:
                 #                     if transition not in timed_enabled_transitions:
                 #                         current_places_time[place_num] = self.places_time[place_num]
 
-                # Update places current time
-                enabled_transitions_times = list()
-                for transition in self.transitions_:
-                    transition_num = self.label_to_transition_[transition]
-                    if transition in timed_enabled_transitions:
-                        current_places_time[timed_transitions_to_places[transition_num]] = \
-                            current_places_time[timed_transitions_to_places[transition_num]] - current_transitions_time[transition_num]
-                        enabled_transitions_times.append(current_transitions_time[transition_num])
-                    if transition not in timed_enabled_transitions:
-                        current_places_time[timed_transitions_to_places[transition_num]] = \
-                            self.places_time[timed_transitions_to_places[transition_num]]
 
-                # last_fired_transition_time = min(enabled_transitions_time)
 
+                print("Enabled transitions:")
+                print(enabled_transitions)
                 print("Places time:")
                 print(self.places_time)
                 print("Places current time:")
@@ -442,11 +463,14 @@ class PetriNet:
                 print(current_transitions_time)
                 print("Enabled transitions time:")
                 print(enabled_transitions_times)
+                print("Transition to fire:")
+                print(transition_to_fire)
                 net_time = net_time + min(enabled_transitions_times)
                 print("Net time:")
                 print(net_time)
 
                 self.plot("net_state",True)
+                time.sleep(frame_time)
 
     def run_conditional_timed_net(self):
         transition_to_fire = ''
