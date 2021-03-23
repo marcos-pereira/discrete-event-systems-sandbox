@@ -91,7 +91,11 @@ def main():
     net5.set_arcs_incidence_matrix()
     net5.set_places_time(net5_places_time)
     net5.plot('net5', True)
-    net5.run_timed_net()
+    # Run time for petri net (s)
+    run_time = 25
+    # Frame time (s)
+    frame_time = 1
+    net5.run_timed_net(run_time, frame_time)
 
 if __name__ == '__main__':
 
