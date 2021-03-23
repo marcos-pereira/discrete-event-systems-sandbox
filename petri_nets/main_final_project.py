@@ -94,7 +94,7 @@ def main():
     # Run time for petri net (s)
     run_time = 25
     # Frame time (s)
-    frame_time = 1
+    frame_time = 0.1
     net5.run_timed_net(run_time, frame_time)
 
 if __name__ == '__main__':
