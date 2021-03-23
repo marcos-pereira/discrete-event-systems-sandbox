@@ -286,7 +286,6 @@ class PetriNet:
 
     def timed_enabled_transitions(self, places_time, transitions_time):
         enabled_transitions = set()
-        enabled_transitions_time = set()
 
         # Create a dict of list because every transition can have more than one place
         transitions_to_input_places = dict()
@@ -323,20 +322,9 @@ class PetriNet:
             # The transition time is the time of the place with the max waiting time
             transitions_time[transition_num] = max(time_places_before_transition)
 
-            # if transition_enabled == False:
-            #     # Reset the transition time to the initial time of the associated place with max waiting time
-            #     transitions_time[transition_num] = max(time_places_before_transition)
-
-
             if transition_enabled == True:
                 # Add transition to enabled transitions
                 enabled_transitions.add(transition)
-
-                # # If transition enabled remove the time from the last fired transition
-                # # This yields the time remaining to enable the transition
-                # transitions_time[transition_num] = transitions_time[transition_num] - last_fired_transition_time
-
-                # enabled_transitions_time.add(transitions_time[transition_num])
 
 
         return enabled_transitions, transitions_time, transitions_to_input_places
@@ -365,9 +353,6 @@ class PetriNet:
 
             # Set transition time to time of place with max time
             current_transitions_time[transition_num] = max(time_places_before_transition)
-
-        # Time of the last fired transition
-        last_fired_transition_time = 0
 
         # Running time of the net
         net_time = 0
@@ -399,12 +384,17 @@ class PetriNet:
             for transition in self.transitions_:
                 transition_num = self.label_to_transition_[transition]
                 if transition in enabled_transitions:
+                    # For each input place of the transition
                     for place_num in transitions_to_input_places[transition_num]:
+                        # Update time of places before enabled transition
                         current_places_time[place_num] = \
                             current_places_time[place_num] - current_transitions_time[transition_num]
-                        enabled_transitions_times.append(current_transitions_time[transition_num])
-                        timed_enabled_transitions.append(transition)
+                        # If current place is <=0, then the transition of the place is enabled
+                        if current_places_time[place_num] <= 0:
+                            enabled_transitions_times.append(current_transitions_time[transition_num])
+                            timed_enabled_transitions.append(transition)
                 if transition not in enabled_transitions:
+                    # For each input place of the transition, reset the time since they are not enabled yet
                     for place_num in transitions_to_input_places[transition_num]:
                         current_places_time[place_num] = self.places_time[place_num]
 
@@ -428,30 +418,6 @@ class PetriNet:
 
                 # Run net after firing transition
                 self.next_marking(u)
-
-                # Time of places with enabled transitions
-                time_places_enabled_transitions = list()
-
-                # # Update places current time
-                # for transition in self.transitions_:
-                #     transition_num = self.label_to_transition_[transition]
-                #     ## Get corresponding input edges to transition
-                #     for arc in self.arcs_place_transition_:
-                #         arc_place = arc[0]
-                #         arc_transition = arc[1]
-                #         ## If arc transition corresponds to the transition
-                #         if arc_transition == self.label_to_transition_[transition]:
-                #             ## Check for all places that have edges input to the transition
-                #             for place in self.places_:
-                #                 place_num = self.label_to_place_[place]
-                #                 if place_num == arc_place:
-                #                     if transition in timed_enabled_transitions:
-                #                         current_places_time[place_num] = current_places_time[place_num] - current_transitions_time[transition_num]
-                #                         time_places_enabled_transitions.append(current_places_time[place_num])
-                #                     if transition not in timed_enabled_transitions:
-                #                         current_places_time[place_num] = self.places_time[place_num]
-
-
 
                 print("Enabled transitions:")
                 print(enabled_transitions)
