@@ -329,7 +329,7 @@ class PetriNet:
 
         return enabled_transitions, transitions_time, transitions_to_input_places
 
-    def run_timed_net(self, run_time, frame_time):
+    def run_timed_net(self, run_time, frame_time, plot_net):
         transition_to_fire = ''
         current_places_time = self.places_time.copy()
         current_transitions_time = np.zeros((len(self.transitions_)))
@@ -356,6 +356,12 @@ class PetriNet:
 
         # Running time of the net
         net_time = 0
+
+        # Marking of net for the whole run_time
+        net_markings = np.zeros((len(self.marking_)))
+
+        # Simulation time
+        sim_time = np.array([net_time])
 
         while net_time < run_time:
             print("-----------------------------------")
@@ -435,8 +441,13 @@ class PetriNet:
                 print("Net time:")
                 print(net_time)
 
-                self.plot("net_state",True)
+                self.plot("net_state", plot_net)
                 time.sleep(frame_time)
+
+                net_markings = np.vstack((net_markings, self.marking_))
+                sim_time = np.concatenate([sim_time, [net_time]], axis=0)
+
+        return net_markings, sim_time
 
     def run_conditional_timed_net(self):
         transition_to_fire = ''
