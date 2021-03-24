@@ -329,7 +329,7 @@ class PetriNet:
 
         return enabled_transitions, transitions_time, transitions_to_input_places
 
-    def run_timed_net(self, run_time, frame_time, plot_net):
+    def run_timed_net(self, run_time, frame_time, plot_net, manual_control):
         transition_to_fire = ''
         current_places_time = self.places_time.copy()
         current_transitions_time = np.zeros((len(self.transitions_)))
@@ -377,9 +377,6 @@ class PetriNet:
                 self.timed_enabled_transitions(self.places_time, current_transitions_time)
             print(enabled_transitions)
 
-            # print("Enter transition to fire:")
-            # transition_to_fire = input()
-
             # Transitions times of enabled transitions
             enabled_transitions_times = list()
 
@@ -405,7 +402,12 @@ class PetriNet:
                         current_places_time[place_num] = self.places_time[place_num]
 
             minimum_time_transition = enabled_transitions_times.index(min(enabled_transitions_times))
-            transition_to_fire = timed_enabled_transitions[minimum_time_transition]
+
+            if manual_control == True:
+                print("Enter transition to fire:")
+                transition_to_fire = input()
+            else:
+                transition_to_fire = timed_enabled_transitions[minimum_time_transition]
 
             # If transition label is wrong, ask for new transition label
             if transition_to_fire not in self.transitions_ or transition_to_fire not in enabled_transitions:

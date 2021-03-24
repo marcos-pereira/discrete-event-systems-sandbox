@@ -59,21 +59,21 @@ def main():
     net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15']
     net5_transitions = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11']
     net5_init_marking = np.array([3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 4, 0, 0, 0])
-    p1_t = 1
-    p2_t = 3
-    p3_t = 0
-    p4_t = 0
-    p5_t = 0
-    p6_t = 0
-    p7_t = 3
-    p8_t = 0
-    p9_t = 1
-    p10_t = 0
-    p11_t = 0
-    p12_t = 0
-    p13_t = 0
-    p14_t = 0
-    p15_t = 0
+    p1_t = 0.01 # NUM_OBJ
+    p2_t = 5 # ROBOT
+    p3_t = 0.1 # ROBOT AVAILABLE
+    p4_t = 0 # BOOK
+    p5_t = 0 # P1
+    p6_t = 2 # HEAT
+    p7_t = 5 # ROBOT
+    p8_t = 0 # P2
+    p9_t = 1 # PLACE
+    p10_t = 0.1 # FINISH
+    p11_t = 1 # NEXT_OBJ
+    p12_t = 1 # BLUE
+    p13_t = 1 # GREEN
+    p14_t = 1 # RED
+    p15_t = 0.5 # OBJ_ENABLED
     net5_places_time = np.array([p1_t, p2_t, p3_t, p4_t, p5_t, p6_t, p7_t, p8_t, p9_t, p10_t, p11_t, p12_t, p13_t, p14_t, p15_t])
     print(net5_places_time)
     net5_incidence_matrix = np.array([[-1, 1, -1, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, -1],
@@ -96,7 +96,8 @@ def main():
     run_time = 100
     # Frame time (s)
     frame_time = 0.0
-    net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output)
+    manual_control = False
+    net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output, manual_control)
 
     # Plot num objects in place 4 (books)
     plt.plot(sim_time[:], net_markings[:, 3], 'b-')
