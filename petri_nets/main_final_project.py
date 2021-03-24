@@ -98,11 +98,11 @@ def main():
     frame_time = 0.0
     net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output)
 
-    print(len(sim_time))
-    print(len(net_markings))
-
+    # Plot num objects in place 4 (books)
     plt.plot(sim_time[:], net_markings[:, 3], 'b-')
+    # Plot num objects in place 5 (salads)
     plt.plot(sim_time[:], net_markings[:, 4], 'g-')
+    # Plot num objects in place 8 (meats)
     plt.plot(sim_time[:], net_markings[:, 7], 'r-')
     plt.title('Number of objects')
     plt.ylabel('Number')
