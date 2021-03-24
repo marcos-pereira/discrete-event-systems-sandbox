@@ -2,6 +2,7 @@
 
 import numpy as np
 from PetriNet import PetriNet
+import matplotlib.pyplot as plt
 
 def main():
 
@@ -92,10 +93,21 @@ def main():
     net5.set_places_time(net5_places_time)
     net5.plot('net5', True)
     # Run time for petri net (s)
-    run_time = 25
+    run_time = 100
     # Frame time (s)
-    frame_time = 0.1
-    net5.run_timed_net(run_time, frame_time)
+    frame_time = 0.0
+    net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output)
+
+    print(len(sim_time))
+    print(len(net_markings))
+
+    plt.plot(sim_time[:], net_markings[:, 3], 'b-')
+    plt.plot(sim_time[:], net_markings[:, 4], 'g-')
+    plt.plot(sim_time[:], net_markings[:, 7], 'r-')
+    plt.title('Number of objects')
+    plt.ylabel('Number')
+    plt.xlabel('Time (s)')
+    plt.show()
 
 if __name__ == '__main__':
 
