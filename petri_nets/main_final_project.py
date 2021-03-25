@@ -96,7 +96,7 @@ def main():
     run_time = 100
     # Frame time (s)
     frame_time = 0.0
-    manual_control = False
+    manual_control = True
     net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output, manual_control)
 
     # Plot num objects in place 4 (books)
@@ -105,10 +105,13 @@ def main():
     plt.plot(sim_time[:], net_markings[:, 4], 'g-')
     # Plot num objects in place 8 (meats)
     plt.plot(sim_time[:], net_markings[:, 7], 'r-')
-    plt.title('Number of objects')
-    plt.ylabel('Number')
-    plt.xlabel('Time (s)')
+    plt.title('Número de objetos', fontsize=14)
+    plt.ylabel('Número', fontsize=14)
+    plt.xlabel('Tempo (s)', fontsize=14)
+    fig_name = 't' + str(run_time)
+    plt.savefig(fig_name)
     plt.show()
+
 
 if __name__ == '__main__':
 
