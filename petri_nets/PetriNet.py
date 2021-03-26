@@ -357,6 +357,9 @@ class PetriNet:
         # Running time of the net
         net_time = 0
 
+        # Last fired transition time
+        last_fired_transition_time = 0
+
         # Marking of net for the whole run_time
         net_markings = np.zeros((len(self.marking_)))
 
@@ -372,42 +375,120 @@ class PetriNet:
             print("Transitions labels:")
             print(self.transitions_)
 
+            print("Places labels:")
+            print(self.places_)
+
+            print("Places time:")
+            print(self.places_time)
+
+            print("Net marking:")
+            print(self.marking_)
+
             print("Enabled transitions:")
             enabled_transitions, current_transitions_time, transitions_to_input_places = \
                 self.timed_enabled_transitions(self.places_time, current_transitions_time)
             print(enabled_transitions)
 
             # Transitions times of enabled transitions
-            enabled_transitions_times = list()
+            transitions_times = list()
 
             # Timed enabled transitions
             timed_enabled_transitions = list()
+
+            print("Last fired transition time:")
+            print(last_fired_transition_time)
+
+            print("Places current time before updating:")
+            print(current_places_time)
+
+            # Places that are enabling any transition
+            places_enabling_transitions = np.zeros(len(self.places_))
 
             # Update places current time
             for transition in self.transitions_:
                 transition_num = self.label_to_transition_[transition]
                 if transition in enabled_transitions:
+                    print("Transition in enabled transitions: " + transition)
                     # For each input place of the transition
                     for place_num in transitions_to_input_places[transition_num]:
                         # Update time of places before enabled transition
                         current_places_time[place_num] = \
-                            current_places_time[place_num] - current_transitions_time[transition_num]
-                        # If current place is <=0, then the transition of the place is enabled
-                        if current_places_time[place_num] <= 0:
-                            enabled_transitions_times.append(current_transitions_time[transition_num])
-                            timed_enabled_transitions.append(transition)
+                            current_places_time[place_num] - last_fired_transition_time
+                        print("current_places_time " + str(place_num))
+                        print(current_places_time[place_num])
+                        places_enabling_transitions[place_num] = 1
                 if transition not in enabled_transitions:
+                    print("Transition not in enabled transitions: " + transition)
                     # For each input place of the transition, reset the time since they are not enabled yet
                     for place_num in transitions_to_input_places[transition_num]:
-                        current_places_time[place_num] = self.places_time[place_num]
+                        if places_enabling_transitions[place_num] == 0:
+                            current_places_time[place_num] = self.places_time[place_num]
 
-            minimum_time_transition = enabled_transitions_times.index(min(enabled_transitions_times))
+            print("Places current time after updating:")
+            print(current_places_time)
+
+            enabled_transitions_time = list()
+
+            # Check all enabled transitions places time
+            for transition in enabled_transitions:
+                print("Enabled transition " + transition)
+                transition_num = self.label_to_transition_[transition]
+                enabled_transition = True
+                # Check all input places to enabled transition
+                for place_num in transitions_to_input_places[transition_num]:
+                    if current_places_time[place_num] <= 0.0:
+                        print("Time <= 0")
+                        print("current_places_time " + str(place_num))
+                        print(current_places_time[place_num])
+                        # Reset place time
+                        current_places_time[place_num] = self.places_time[place_num]
+                    else:
+                        print("Time > 0")
+                        print("current_places_time " + str(place_num))
+                        enabled_transition = False
+                        break
+                if enabled_transition == True:
+                    # Store timely enabled transitions and its time
+                    enabled_transitions_time.append(current_places_time[place_num])
+                    timed_enabled_transitions.append(transition)
+                # Store time of enabled transitions anyway because they will be used to count net time
+                transitions_times.append(current_transitions_time[transition_num])
+
+            print("Timed enabled transitions:")
+            print(timed_enabled_transitions)
+
+            print("Places current time after resetting:")
+            print(current_places_time)
+
+            if len(timed_enabled_transitions) > 0:
+                minimum_time_transition = enabled_transitions_time.index(min(enabled_transitions_time))
+                transition_to_fire = timed_enabled_transitions[minimum_time_transition]
+                print("Transition timely enabled:")
+                print(transition_to_fire)
+            else:
+                last_fired_transition_time = min(transitions_times)
+                net_time = net_time + min(transitions_times)
+                print("Net time:")
+                print(net_time)
+                sim_time = np.concatenate([sim_time, [net_time]], axis=0)
+                net_markings = np.vstack((net_markings, self.marking_))
+                print("No transition timely enabled! Continue...")
+                if manual_control == True:
+                    print("Press enter to continue")
+                    transition_to_fire_manual = input()
+                continue
 
             if manual_control == True:
                 print("Enter transition to fire:")
-                transition_to_fire = input()
-            else:
-                transition_to_fire = timed_enabled_transitions[minimum_time_transition]
+                transition_to_fire_manual = input()
+                if transition_to_fire_manual == transition_to_fire:
+                    transition_to_fire = transition_to_fire_manual
+                else:
+                    print("Transition is not timely enabled!")
+                    print("Firing transition:")
+                    print((transition_to_fire))
+
+            last_fired_transition_time = current_transitions_time[self.label_to_transition_[transition_to_fire]]
 
             # If transition label is wrong, ask for new transition label
             if transition_to_fire not in self.transitions_ or transition_to_fire not in enabled_transitions:
@@ -427,27 +508,26 @@ class PetriNet:
                 # Run net after firing transition
                 self.next_marking(u)
 
-                print("Enabled transitions:")
-                print(enabled_transitions)
-                print("Places time:")
-                print(self.places_time)
+                # print("Enabled transitions:")
+                # print(enabled_transitions)
                 print("Places current time:")
                 print(current_places_time)
                 print("Transitions current time:")
                 print(current_transitions_time)
                 print("Enabled transitions time:")
-                print(enabled_transitions_times)
+                print(transitions_times)
                 print("Transition to fire:")
                 print(transition_to_fire)
-                net_time = net_time + min(enabled_transitions_times)
-                print("Net time:")
-                print(net_time)
 
                 self.plot("net_state", plot_net)
                 time.sleep(frame_time)
 
                 net_markings = np.vstack((net_markings, self.marking_))
-                sim_time = np.concatenate([sim_time, [net_time]], axis=0)
+
+            net_time = net_time + min(transitions_times)
+            print("Net time:")
+            print(net_time)
+            sim_time = np.concatenate([sim_time, [net_time]], axis=0)
 
         return net_markings, sim_time
 
