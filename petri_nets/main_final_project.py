@@ -10,7 +10,7 @@ def main():
     show_output = True
 
     # Number of net to run
-    num_net = 5
+    num_net = 2
 
     ## TASK 2
     # net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11']
@@ -65,9 +65,9 @@ def main():
         net1_transitions = ['c','r','s']
         net1_init_marking = np.array([0, 0, 1, 1, 0])
         F_t = 1  # queue waiting time
-        A_t = 2  # server working
+        A_t = 4  # server working
         O_t = 1  # server idle
-        C_t = 4  # client arrived to queue
+        C_t = 2  # client arrived to queue
         S_t = 0  # client departed
         net1_places_time = np.array([F_t, A_t, O_t, C_t, S_t])
         net1_Aminus = np.array([[0, 0, 0, -1, 0],
@@ -95,6 +95,46 @@ def main():
         plt.ylabel('Número', fontsize=14)
         plt.xlabel('Tempo (s)', fontsize=14)
         fig_name = 'net_1_t' + str(run_time)
+        plt.savefig(fig_name)
+        plt.show()
+
+    if num_net == 2:
+        ## Client queue and server net
+        net1_places = ['F', 'A', 'O', 'C', 'S', 'CTRL']
+        net1_transitions = ['c','r','s']
+        net1_init_marking = np.array([0, 0, 1, 1, 0, 1])
+        F_t = 1  # queue waiting time
+        A_t = 4  # server working
+        O_t = 1  # server idle
+        C_t = 2  # client arrived to queue
+        S_t = 0  # client departed
+        CTRL_t = 0 # Control client arrivals
+        net1_places_time = np.array([F_t, A_t, O_t, C_t, S_t, CTRL_t])
+        net1_Aminus = np.array([[0, 0, 0, -1, 0, -1],
+                                [-1, 0, -1, 0, 0, 0],
+                                [0, -1, 0, 0, 0, 0]])
+        net1_Aplus = np.array([[1, 0, 0, 1, 0, 0],
+                               [0, 1, 0, 0, 0, 0],
+                               [0, 0, 1, 0, 1, 1]])
+        net1 = PetriNet(net1_places, net1_transitions, net1_init_marking, net1_Aminus, net1_Aplus)
+        net1.set_arcs_Aminus_Aplus()
+        net1.set_places_time(net1_places_time)
+        net1.plot('net1', show_output)
+        # Run time for petri net (s)
+        run_time = 100
+        # Frame time (s)
+        frame_time = 0.0
+        manual_control = False
+        net_markings, sim_time = net1.run_timed_net(run_time, frame_time, show_output, manual_control)
+
+        # Plot num of departed clients in S
+        plt.plot(sim_time[:], net_markings[:, 0], 'b-')
+        plt.plot(sim_time[:], net_markings[:, 4], 'r-')
+        plt.legend(['Clientes na fila', 'Clientes atendidos'])
+        plt.title('Número de clientes', fontsize=14)
+        plt.ylabel('Número', fontsize=14)
+        plt.xlabel('Tempo (s)', fontsize=14)
+        fig_name = 'net_2_t' + str(run_time)
         plt.savefig(fig_name)
         plt.show()
 
