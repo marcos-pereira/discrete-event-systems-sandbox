@@ -10,7 +10,7 @@ def main():
     show_output = True
 
     # Number of net to run
-    num_net = 1
+    num_net = 5
 
     ## TASK 2
     # net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11']
@@ -64,10 +64,10 @@ def main():
         net1_places = ['F', 'A', 'O', 'C', 'S']
         net1_transitions = ['c','r','s']
         net1_init_marking = np.array([0, 0, 1, 1, 0])
-        F_t = 3  # queue waiting time
-        A_t = 5  # server working
+        F_t = 1  # queue waiting time
+        A_t = 2  # server working
         O_t = 1  # server idle
-        C_t = 2  # client arrived
+        C_t = 4  # client arrived to queue
         S_t = 0  # client departed
         net1_places_time = np.array([F_t, A_t, O_t, C_t, S_t])
         net1_Aminus = np.array([[0, 0, 0, -1, 0],
@@ -84,15 +84,17 @@ def main():
         run_time = 100
         # Frame time (s)
         frame_time = 0.0
-        manual_control = True
+        manual_control = False
         net_markings, sim_time = net1.run_timed_net(run_time, frame_time, show_output, manual_control)
 
         # Plot num of departed clients in S
+        plt.plot(sim_time[:], net_markings[:, 0], 'b-')
         plt.plot(sim_time[:], net_markings[:, 4], 'r-')
-        plt.title('Número de clientes atendidos', fontsize=14)
+        plt.legend(['Clientes na fila', 'Clientes atendidos'])
+        plt.title('Número de clientes', fontsize=14)
         plt.ylabel('Número', fontsize=14)
         plt.xlabel('Tempo (s)', fontsize=14)
-        fig_name = 't' + str(run_time)
+        fig_name = 'net_1_t' + str(run_time)
         plt.savefig(fig_name)
         plt.show()
 
@@ -136,7 +138,7 @@ def main():
         plt.title('Número de peças', fontsize=14)
         plt.ylabel('Número', fontsize=14)
         plt.xlabel('Tempo (s)', fontsize=14)
-        fig_name = 't' + str(run_time)
+        fig_name = 'net3_t' + str(run_time)
         plt.savefig(fig_name)
         plt.show()
 
@@ -179,10 +181,10 @@ def main():
         net5.set_places_time(net5_places_time)
         net5.plot('net5', True)
         # Run time for petri net (s)
-        run_time = 100
+        run_time = 1000
         # Frame time (s)
         frame_time = 0.0
-        manual_control = True
+        manual_control = False
         net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output, manual_control)
 
         # Plot num objects in place 4 (books)
@@ -194,7 +196,7 @@ def main():
         plt.title('Número de objetos', fontsize=14)
         plt.ylabel('Número', fontsize=14)
         plt.xlabel('Tempo (s)', fontsize=14)
-        fig_name = 't' + str(run_time)
+        fig_name = 'net5_t' + str(run_time)
         plt.savefig(fig_name)
         plt.show()
 
