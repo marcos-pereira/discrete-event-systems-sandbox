@@ -1,3 +1,8 @@
+# Discrete event systems final project at Universidade Federal de Minas Gerais (UFMG)
+# Author: Marcos da Silva Pereira 2020740723
+# Email: marcos.si.pereira@gmail.com ; marcos-si-pereira@ufmg.br
+# Last modified: 26.03.2021
+
 import numpy as np
 import random
 from graphviz import Digraph
@@ -408,17 +413,17 @@ class PetriNet:
             for transition in self.transitions_:
                 transition_num = self.label_to_transition_[transition]
                 if transition in enabled_transitions:
-                    print("Transition in enabled transitions: " + transition)
+                    # print("Transition in enabled transitions: " + transition)
                     # For each input place of the transition
                     for place_num in transitions_to_input_places[transition_num]:
                         # Update time of places before enabled transition
                         current_places_time[place_num] = \
                             current_places_time[place_num] - last_fired_transition_time
-                        print("current_places_time " + str(place_num))
-                        print(current_places_time[place_num])
+                        # print("current_places_time " + str(place_num))
+                        # print(current_places_time[place_num])
                         places_enabling_transitions[place_num] = 1
                 if transition not in enabled_transitions:
-                    print("Transition not in enabled transitions: " + transition)
+                    # print("Transition not in enabled transitions: " + transition)
                     # For each input place of the transition, reset the time since they are not enabled yet
                     for place_num in transitions_to_input_places[transition_num]:
                         if places_enabling_transitions[place_num] == 0:
@@ -431,20 +436,20 @@ class PetriNet:
 
             # Check all enabled transitions places time
             for transition in enabled_transitions:
-                print("Enabled transition " + transition)
+                # print("Enabled transition " + transition)
                 transition_num = self.label_to_transition_[transition]
                 enabled_transition = True
                 # Check all input places to enabled transition
                 for place_num in transitions_to_input_places[transition_num]:
                     if current_places_time[place_num] <= 0.0:
-                        print("Time <= 0")
-                        print("current_places_time " + str(place_num))
-                        print(current_places_time[place_num])
+                        # print("Time <= 0")
+                        # print("current_places_time " + str(place_num))
+                        # print(current_places_time[place_num])
                         # Reset place time
                         current_places_time[place_num] = self.places_time[place_num]
                     else:
-                        print("Time > 0")
-                        print("current_places_time " + str(place_num))
+                        # print("Time > 0")
+                        # print("current_places_time " + str(place_num))
                         enabled_transition = False
                         break
                 if enabled_transition == True:
