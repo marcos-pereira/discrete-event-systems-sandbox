@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# Discrete event systems final project at Universidade Federal de Minas Gerais (UFMG)
+# Author: Marcos da Silva Pereira 2020740723
+# Email: marcos.si.pereira@gmail.com ; marcos-si-pereira@ufmg.br
+# Last modified: 26.03.2021
+
 import numpy as np
 from PetriNet import PetriNet
 import matplotlib.pyplot as plt
@@ -10,7 +15,7 @@ def main():
     show_output = True
 
     # Number of net to run
-    num_net = 2
+    num_net = 5
 
     ## TASK 2
     # net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11']
@@ -221,9 +226,9 @@ def main():
         net5.set_places_time(net5_places_time)
         net5.plot('net5', True)
         # Run time for petri net (s)
-        run_time = 1000
+        run_time = 100
         # Frame time (s)
-        frame_time = 0.0
+        frame_time = 4.0
         manual_control = False
         net_markings, sim_time = net5.run_timed_net(run_time, frame_time, show_output, manual_control)
 
