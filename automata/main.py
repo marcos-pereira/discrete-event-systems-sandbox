@@ -38,6 +38,7 @@ def main():
     # dfa.print_automaton()
     # dfa.plot_automaton('coaccessible_automaton', show_output)
 
+    # Light bulb automaton
     states = {'on', 'off'}
     transitions = {
         'on': {'turn_off': 'off'},
@@ -57,6 +58,47 @@ def main():
     dfa.print_automaton()
     # dfa.run(event_sequence)
     dfa.plot_automaton('light_bulb', show_output)
+
+    ## Client queue
+    states = {'empty_queue', 'one_client', 'two_clients'}
+    transitions = {
+        'empty_queue': {'arrive': 'one_client'},
+        'one_client': {'arrive': 'two_clients','enter_server':'empty_queue'},
+        'two_clients': {'enter_server':'one_client'}
+    }
+    initial_state = 'empty_queue'
+    marked_states = {'empty_queue'}
+    alphabet = {'arrive', 'enter_server'}
+
+    dfa = DeterministicFiniteAutomaton(states, transitions, initial_state, marked_states, alphabet)
+
+    ## Show automaton plot output
+    show_output = True
+
+    ## Print automaton
+    dfa.print_automaton()
+    # dfa.run(event_sequence)
+    dfa.plot_automaton('queue', show_output)
+
+    ## Client server
+    states = {'empty_server', 'serving_client'}
+    transitions = {
+        'empty_server': {'enter_server': 'serving_client'},
+        'serving_client': {'leave_server': 'empty_server'},
+    }
+    initial_state = 'empty_server'
+    marked_states = {'empty_server'}
+    alphabet = {'enter_server', 'leave_server'}
+
+    dfa = DeterministicFiniteAutomaton(states, transitions, initial_state, marked_states, alphabet)
+
+    ## Show automaton plot output
+    show_output = True
+
+    ## Print automaton
+    dfa.print_automaton()
+    # dfa.run(event_sequence)
+    dfa.plot_automaton('server', show_output)
 
 if __name__ == '__main__':
 
