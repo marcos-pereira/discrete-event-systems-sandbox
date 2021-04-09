@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Discrete event systems final project at Universidade Federal de Minas Gerais (UFMG)
-# Author: Marcos da Silva Pereira 2020740723
+# Author: Marcos da Silva Pereira
 # Email: marcos.si.pereira@gmail.com ; marcos-si-pereira@ufmg.br
 # Last modified: 26.03.2021
 
@@ -18,6 +18,7 @@ def main():
     num_net = 5
 
     ## TASK 2
+    # TODO: remove this code of net with conditions
     # net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9', 'P10', 'P11']
     # net5_transitions = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8']
     # net5_init_marking = np.array([3, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1])
