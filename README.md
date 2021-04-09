@@ -4,9 +4,9 @@ This project will implement simple automata utilities for educational purposes.
 # How to run the automata script?
 
 Simply go to the [automata](https://github.com/marcos-pereira/discrete-event-systems-sandbox/tree/main/automata) directory and run
-``
+```
 python3 main.py
-``
+```
 The code will plot several automata examples including one that obtains the accessible part of one of the automata.
 
 # How to run the petri net script?
