@@ -3,7 +3,6 @@
 # Discrete event systems final project at Universidade Federal de Minas Gerais (UFMG)
 # Author: Marcos da Silva Pereira
 # Email: marcos.si.pereira@gmail.com ; marcos-si-pereira@ufmg.br
-# Last modified: 26.03.2021
 
 import numpy as np
 from PetriNet import PetriNet
