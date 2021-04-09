@@ -66,7 +66,7 @@ def main():
     for net3_marking in net3_markings:
         print(net3_marking)
 
-    ## Chapter 3, exercise 6
+    ## Petri net example based on incidence matrix and resulting control
     net4_places = ['P1', 'P2']
     net4_transitions = ['t1', 't2', 't3', 't4']
     net4_init_marking = np.array([0, 1])
@@ -85,7 +85,7 @@ def main():
     net4.set_arcs_incidence_matrix()
     net4.plot('net4_controlled', False)
 
-    ## Chapter 3, exercise 9
+    ## Petri net example based on incidence matrix and resulting control
     net5_places = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']
     net5_transitions = ['t1', 't2', 't3', 't4', 't5']
     net5_init_marking = np.array([0, 0, 0, 1, 4, 4])
